@@ -110,14 +110,14 @@ if data is not None:
                 # Update learning rate
                 scheduler.step()
 
-                if i % 10 == 0:
-                    if loss < best_loss:
-                        best_loss = loss
-                        model.save_pretrained("best.pt")
+                if loss < best_loss:
+                    best_loss = loss
+                    model.save_pretrained("best.pt")
 
-                test_tokenized = tokenizer.encode(test_string, return_tensors='pt')
-                generated_text = model.generate(test_tokenized.to(device), max_length=max_length, num_return_sequences=1, pad_token_id=tokenizer.eos_token_id)
-                generated_text = tokenizer.decode(generated_text[0], skip_special_tokens=True)
+                if i % 10 == 0:
+                    test_tokenized = tokenizer.encode(test_string, return_tensors='pt')
+                    generated_text = model.generate(test_tokenized.to(device), max_length=max_length, num_return_sequences=1, pad_token_id=tokenizer.eos_token_id)
+                    generated_text = tokenizer.decode(generated_text[0], skip_special_tokens=True)
 
                 print("Epoch %d, batch: %d, loss: %0.15f" % (epoch, i, loss))
                 if generated_text != last_generated_text:
