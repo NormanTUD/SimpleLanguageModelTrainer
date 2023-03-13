@@ -15,7 +15,7 @@ parser.add_argument('--filename', type=str, required=True,
 parser.add_argument('--batch-size', type=int, default=32,
                     help='the batch size to use for training (default: 32)')
 parser.add_argument('--max-length', type=int, default=50,
-                    help='the batch size to use for training (default: 32)')
+                    help='the batch size to use for training (default: 50)')
 
 # Parse the arguments
 args = parser.parse_args()
