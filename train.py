@@ -26,12 +26,26 @@ import time
 from transformers import AutoTokenizer, AutoModelWithLMHead
 import torch
 
+def msg (m):
+    print(bcolors.WARNING + str(m) + bcolors.ENDC)
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 device = torch.device("cpu")
 if torch.cuda.is_available():
-    print("Using CUDA")
+    msg("Using CUDA")
     device = torch.device("cuda")
 else:
-    print("Using CPU")
+    msg("Using CPU")
 
 # Access the values of the arguments
 learning_rate = args.learning_rate
@@ -45,10 +59,10 @@ max_length = args.max_length
 # Load the pre-trained model and tokenizer
 tokenizer = AutoTokenizer.from_pretrained("dbmdz/german-gpt2")
 if os.path.exists("best.pt"):
-    print("Loaded from best.pt")
+    msg("Loaded from best.pt")
     model = AutoModelWithLMHead.from_pretrained("best.pt")
 else:
-    print("Loading default dbmdz/german-gpt2")
+    msg("Loading default dbmdz/german-gpt2")
     model = AutoModelWithLMHead.from_pretrained("dbmdz/german-gpt2")
 
 def read_file(filename, chunk_size=1024):
@@ -66,25 +80,25 @@ def read_file(filename, chunk_size=1024):
                 chunks.append(tokenized_chunk)
             tokenized_data = torch.cat(chunks, dim=1)
     except Exception as e:
-        print(f"Error: {e}")
+        msg(f"Error: {e}")
         tokenized_data = None
     return tokenized_data
 
-print("Reading file")
+msg("Reading file")
 data = read_file(filename, 4096)
-print("File read")
+msg("File read")
 
 last_generated_text = ""
 
 if data is not None:
     # Set the model to training mode
-    print("data is not None")
-    print("Moving model to device")
+    msg("data is not None")
+    msg("Moving model to device")
     model.to(device)
-    print("Switch to training mode")
+    msg("Switch to training mode")
     model.train()
 
-    print("Initialize the optimizer and scheduler")
+    msg("Initialize the optimizer and scheduler")
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
 
@@ -119,15 +133,15 @@ if data is not None:
                     generated_text = model.generate(test_tokenized.to(device), max_length=max_length, num_return_sequences=1, pad_token_id=tokenizer.eos_token_id)
                     generated_text = tokenizer.decode(generated_text[0], skip_special_tokens=True)
 
-                print("Epoch %d, batch: %d, loss: %0.15f" % (epoch, i, loss))
+                msg("Epoch %d, batch: %d, loss: %0.15f" % (epoch, i, loss))
                 if generated_text != last_generated_text:
-                    print(generated_text)
+                    msg(generated_text)
                     last_generated_text = generated_text
 
-    print("Set the model to evaluation mode")
+    msg("Set the model to evaluation mode")
     model.eval()
 
-    print("Generate text")
+    msg("Generate text")
     test_tokenized = tokenizer.encode(test_string, return_tensors='pt')
     generated_text = model.generate(test_tokenized.to(device), max_length=max_length, num_return_sequences=1, pad_token_id=tokenizer.eos_token_id)
     generated_text = tokenizer.decode(generated_text[0], skip_special_tokens=True)
